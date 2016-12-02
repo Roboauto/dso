@@ -28,8 +28,10 @@ find_package(OpenCV QUIET)
 add_definitions("-DENABLE_SSE")
 set(CMAKE_CXX_FLAGS
 #   "${SSE_FLAGS} -O3 -g -std=c++0x -fno-omit-frame-pointer -march=native"
-   "${SSE_FLAGS} -O3 -g -std=c++0x -fno-omit-frame-pointer"
+   "${CMAKE_CXX_FLAGS} ${SSE_FLAGS}-std=c++14 -fno-omit-frame-pointer"
 )
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 # Sources files
 set(dso_SOURCE_FILES

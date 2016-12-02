@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <memory>
 
 #include "IOWrapper/Output3DWrapper.h"
 #include "IOWrapper/ImageDisplay.h"
@@ -349,8 +350,6 @@ void parseArgument(char* arg)
 	printf("could not parse argument \"%s\"!!!!\n", arg);
 }
 
-
-
 int main( int argc, char** argv )
 {
 	//setlocale(LC_ALL, "");
@@ -362,7 +361,7 @@ int main( int argc, char** argv )
 	boost::thread exThread = boost::thread(exitThread);
 
 
-	ImageFolderReader* reader = new ImageFolderReader(source,calib, gammaCalib, vignette);
+	auto reader = std::make_unique<ImageFolderReader>(source,calib, gammaCalib, vignette);
 	reader->setGlobalCalibration();
 
 
@@ -391,7 +390,7 @@ int main( int argc, char** argv )
 
 
 
-	FullSystem* fullSystem = new FullSystem();
+	auto fullSystem = std::make_unique<FullSystem>();
 	fullSystem->setGammaFunction(reader->getPhotometricGamma());
 	fullSystem->linearizeOperation = (playbackSpeed==0);
 
@@ -504,11 +503,10 @@ int main( int argc, char** argv )
                     printf("RESETTING!\n");
 
                     std::vector<IOWrap::Output3DWrapper*> wraps = fullSystem->outputWrapper;
-                    delete fullSystem;
 
                     for(IOWrap::Output3DWrapper* ow : wraps) ow->reset();
 
-                    fullSystem = new FullSystem();
+                    fullSystem = std::make_unique<FullSystem>();
                     fullSystem->setGammaFunction(reader->getPhotometricGamma());
                     fullSystem->linearizeOperation = (playbackSpeed==0);
 
@@ -575,14 +573,6 @@ int main( int argc, char** argv )
 		ow->join();
 		delete ow;
 	}
-
-
-
-	printf("DELETE FULLSYSTEM!\n");
-	delete fullSystem;
-
-	printf("DELETE READER!\n");
-	delete reader;
 
 	printf("EXIT NOW!\n");
 	return 0;

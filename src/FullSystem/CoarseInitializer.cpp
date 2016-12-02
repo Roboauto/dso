@@ -49,9 +49,8 @@ CoarseInitializer::CoarseInitializer(int ww, int hh) : thisToNext_aff(0,0), this
 		numPoints[lvl] = 0;
 	}
 
-	JbBuffer = new Vec10f[ww*hh];
-	JbBuffer_new = new Vec10f[ww*hh];
-
+	JbBuffer = std::make_unique<Vec10f[]>(ww*hh);
+	JbBuffer_new = std::make_unique<Vec10f[]>(ww*hh);
 
 	frameID=-1;
 	fixAffine=true;
@@ -65,12 +64,8 @@ CoarseInitializer::CoarseInitializer(int ww, int hh) : thisToNext_aff(0,0), this
 CoarseInitializer::~CoarseInitializer()
 {
 	for(int lvl=0; lvl<pyrLevelsUsed; lvl++)
-	{
-		if(points[lvl] != 0) delete[] points[lvl];
-	}
-
-	delete[] JbBuffer;
-	delete[] JbBuffer_new;
+		if(points[lvl] != 0)
+			delete[] points[lvl];
 }
 
 
@@ -768,73 +763,67 @@ void CoarseInitializer::setFirst(	CalibHessian* HCalib, FrameHessian* newFrameHe
 
 	PixelSelector sel(w[0],h[0]);
 
-	float* statusMap = new float[w[0]*h[0]];
-	bool* statusMapB = new bool[w[0]*h[0]];
+    {
+        auto statusMap = std::make_unique <float[]> (w[0] * h[0]);
+        auto statusMapB = std::make_unique <bool[]> (w[0] * h[0]);
 
-	float densities[] = {0.03,0.05,0.15,0.5,1};
-	for(int lvl=0; lvl<pyrLevelsUsed; lvl++)
-	{
-		sel.currentPotential = 3;
-		int npts;
-		if(lvl == 0)
-			npts = sel.makeMaps(firstFrame, statusMap,densities[lvl]*w[0]*h[0],1,false,2);
-		else
-			npts = makePixelStatus(firstFrame->dIp[lvl], statusMapB, w[lvl], h[lvl], densities[lvl]*w[0]*h[0]);
+        float densities[] = {0.03, 0.05, 0.15, 0.5, 1};
+        for (int lvl = 0; lvl < pyrLevelsUsed; lvl++) {
+            sel.currentPotential = 3;
+            int npts;
+            if (lvl == 0)
+                npts = sel.makeMaps(firstFrame, statusMap.get(), densities[lvl] * w[0] * h[0], 1, false, 2);
+            else
+                npts = makePixelStatus(firstFrame->dIp[lvl], statusMapB.get(), w[lvl], h[lvl], densities[lvl] * w[0] * h[0]);
 
 
+            if (points[lvl] != 0) delete[] points[lvl];
+            points[lvl] = new Pnt[npts];
 
-		if(points[lvl] != 0) delete[] points[lvl];
-		points[lvl] = new Pnt[npts];
+            // set idepth map to initially 1 everywhere.
+            int wl = w[lvl], hl = h[lvl];
+            Pnt *pl = points[lvl];
+            int nl = 0;
+            for (int y = patternPadding + 1; y < hl - patternPadding - 2; y++)
+                for (int x = patternPadding + 1; x < wl - patternPadding - 2; x++) {
+                    //if(x==2) printf("y=%d!\n",y);
+                    if ((lvl != 0 && statusMapB[x + y * wl]) || (lvl == 0 && statusMap[x + y * wl] != 0)) {
+                        //assert(patternNum==9);
+                        pl[nl].u = x + 0.1;
+                        pl[nl].v = y + 0.1;
+                        pl[nl].idepth = 1;
+                        pl[nl].iR = 1;
+                        pl[nl].isGood = true;
+                        pl[nl].energy.setZero();
+                        pl[nl].lastHessian = 0;
+                        pl[nl].lastHessian_new = 0;
+                        pl[nl].my_type = (lvl != 0) ? 1 : statusMap[x + y * wl];
 
-		// set idepth map to initially 1 everywhere.
-		int wl = w[lvl], hl = h[lvl];
-		Pnt* pl = points[lvl];
-		int nl = 0;
-		for(int y=patternPadding+1;y<hl-patternPadding-2;y++)
-		for(int x=patternPadding+1;x<wl-patternPadding-2;x++)
-		{
-			//if(x==2) printf("y=%d!\n",y);
-			if((lvl!=0 && statusMapB[x+y*wl]) || (lvl==0 && statusMap[x+y*wl] != 0))
-			{
-				//assert(patternNum==9);
-				pl[nl].u = x+0.1;
-				pl[nl].v = y+0.1;
-				pl[nl].idepth = 1;
-				pl[nl].iR = 1;
-				pl[nl].isGood=true;
-				pl[nl].energy.setZero();
-				pl[nl].lastHessian=0;
-				pl[nl].lastHessian_new=0;
-				pl[nl].my_type= (lvl!=0) ? 1 : statusMap[x+y*wl];
-
-				Eigen::Vector3f* cpt = firstFrame->dIp[lvl] + x + y*w[lvl];
-				float sumGrad2=0;
-				for(int idx=0;idx<patternNum;idx++)
-				{
-					int dx = patternP[idx][0];
-					int dy = patternP[idx][1];
-					float absgrad = cpt[dx + dy*w[lvl]].tail<2>().squaredNorm();
-					sumGrad2 += absgrad;
-				}
+                        Eigen::Vector3f *cpt = firstFrame->dIp[lvl] + x + y * w[lvl];
+                        float sumGrad2 = 0;
+                        for (int idx = 0; idx < patternNum; idx++) {
+                            int dx = patternP[idx][0];
+                            int dy = patternP[idx][1];
+                            float absgrad = cpt[dx + dy * w[lvl]].tail<2>().squaredNorm();
+                            sumGrad2 += absgrad;
+                        }
 
 //				float gth = setting_outlierTH * (sqrtf(sumGrad2)+setting_outlierTHSumComponent);
 //				pl[nl].outlierTH = patternNum*gth*gth;
 //
 
-				pl[nl].outlierTH = patternNum*setting_outlierTH;
+                        pl[nl].outlierTH = patternNum * setting_outlierTH;
 
 
+                        nl++;
+                        assert(nl <= npts);
+                    }
+                }
 
-				nl++;
-				assert(nl <= npts);
-			}
-		}
 
-
-		numPoints[lvl]=nl;
-	}
-	delete[] statusMap;
-	delete[] statusMapB;
+            numPoints[lvl] = nl;
+        }
+    }
 
 	makeNN();
 
@@ -920,7 +909,7 @@ void CoarseInitializer::applyStep(int lvl)
 		pts[i].idepth = pts[i].idepth_new;
 		pts[i].lastHessian = pts[i].lastHessian_new;
 	}
-	std::swap<Vec10f*>(JbBuffer, JbBuffer_new);
+	std::swap(JbBuffer, JbBuffer_new);
 }
 
 void CoarseInitializer::makeK(CalibHessian* HCalib)
@@ -967,12 +956,14 @@ void CoarseInitializer::makeNN()
 
 	// build indices
 	FLANNPointcloud pcs[PYR_LEVELS];
-	KDTree* indexes[PYR_LEVELS];
+    std::vector<std::unique_ptr<KDTree>> indexes;
+    indexes.reserve(pyrLevelsUsed);
+
 	for(int i=0;i<pyrLevelsUsed;i++)
 	{
 		pcs[i] = FLANNPointcloud(numPoints[i], points[i]);
-		indexes[i] = new KDTree(2, pcs[i], nanoflann::KDTreeSingleIndexAdaptorParams(5) );
-		indexes[i]->buildIndex();
+		indexes.emplace_back(std::make_unique<KDTree>(2, pcs[i], nanoflann::KDTreeSingleIndexAdaptorParams(5)));
+		indexes.back()->buildIndex();
 	}
 
 	const int nn=10;
@@ -1027,13 +1018,6 @@ void CoarseInitializer::makeNN()
 			}
 		}
 	}
-
-
-
-	// done.
-
-	for(int i=0;i<pyrLevelsUsed;i++)
-		delete indexes[i];
 }
 }
 

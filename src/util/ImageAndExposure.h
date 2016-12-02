@@ -43,6 +43,10 @@ public:
 		image = new float[w*h];
 		exposure_time=1;
 	}
+
+	ImageAndExposure(ImageAndExposure const&) = delete;
+	ImageAndExposure &operator=(ImageAndExposure const&) = delete;
+
 	inline ~ImageAndExposure()
 	{
 		delete[] image;

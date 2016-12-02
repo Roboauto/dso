@@ -807,7 +807,8 @@ void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 
 
 	// =========================== add into allFrameHistory =========================
-	FrameHessian* fh = new FrameHessian();
+	//std::unique_ptr<FrameHessian> fh = std::make_unique<FrameHessian>();
+    auto fh = new FrameHessian();
 	FrameShell* shell = new FrameShell();
 	shell->camToWorld = SE3(); 		// no lock required, as fh is not used anywhere yet.
 	shell->aff_g2l = AffLight(0,0);
@@ -844,7 +845,6 @@ void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 		{
 			// if still initializing
 			fh->shell->poseValid = false;
-			delete fh;
 		}
 		return;
 	}

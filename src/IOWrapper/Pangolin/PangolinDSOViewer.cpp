@@ -4,6 +4,7 @@
 * Copyright 2016 Technical University of Munich and Intel.
 * Developed by Jakob Engel <engelj at in dot tum dot de>,
 * for more information see <http://vision.in.tum.de/dso>.
+ *
 * If you use this code, please cite the respective publications as
 * listed on the above website.
 *

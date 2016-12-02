@@ -379,7 +379,7 @@ Undistort* Undistort::getUndistorterForFile(std::string configFilename, std::str
 
 void Undistort::loadPhotometricCalibration(std::string file, std::string noiseImage, std::string vignetteImage)
 {
-	photometricUndist = new PhotometricUndistorter(file, noiseImage, vignetteImage,getOriginalSize()[0], getOriginalSize()[1]);
+	photometricUndist = std::make_unique<PhotometricUndistorter>(file, noiseImage, vignetteImage,getOriginalSize()[0], getOriginalSize()[1]);
 }
 
 template<typename T>
@@ -457,7 +457,7 @@ ImageAndExposure* Undistort::undistort(const MinimalImage<T>* image_raw, float e
 				const float* src = in_data + xxi + yyi * wOrg;
 
 				// interpolate (bilinear)
-				out_data[idx] =  xxyy * src[1+wOrg]
+				out_data[idx] = xxyy * src[1+wOrg]
 									+ (yy-xxyy) * src[wOrg]
 									+ (xx-xxyy) * src[1]
 									+ (1-xx-yy+xxyy) * src[0];
@@ -715,7 +715,7 @@ void Undistort::makeOptimalK_full()
 
 void Undistort::readFromFile(const char* configFileName, int nPars, std::string prefix)
 {
-	photometricUndist=0;
+	photometricUndist.reset();
 	valid = false;
 	passthrough=false;
 	remapX = 0;

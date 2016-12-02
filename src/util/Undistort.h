@@ -29,9 +29,7 @@
 #include "util/NumType.h"
 #include "Eigen/Core"
 
-
-
-
+#include <memory>
 
 namespace dso
 {
@@ -83,7 +81,7 @@ public:
 
 	void loadPhotometricCalibration(std::string file, std::string noiseImage, std::string vignetteImage);
 
-	PhotometricUndistorter* photometricUndist;
+	std::unique_ptr<PhotometricUndistorter> photometricUndist;
 
 protected:
     int w, h, wOrg, hOrg, wUp, hUp;
