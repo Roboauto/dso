@@ -36,10 +36,11 @@
 
 namespace dso
 {
-
+static const auto HEIGHT_FACTOR = 0.6;
 
 PixelSelector::PixelSelector(int w, int h)
 {
+    h *= HEIGHT_FACTOR;
 	randomPattern = new unsigned char[w*h];
 	std::srand(3141592);	// want to be deterministic.
 	for(int i=0;i<w*h;i++) randomPattern[i] = rand() & 0xFF;
@@ -81,7 +82,7 @@ void PixelSelector::makeHists(const FrameHessian* const fh)
 	float * mapmax0 = fh->absSquaredGrad[0];
 
 	int w = wG[0];
-	int h = hG[0];
+	int h = hG[0] * HEIGHT_FACTOR;
 
 	int w32 = w/32;
 	int h32 = h/32;
@@ -231,7 +232,7 @@ int PixelSelector::makeMaps(
 	int numHaveSub = numHave;
 	if(quotia < 0.95)
 	{
-		int wh=wG[0]*hG[0];
+		int wh=wG[0]* hG[0] * HEIGHT_FACTOR;
 		int rn=0;
 		unsigned char charTH = 255*quotia;
 		for(int i=0;i<wh;i++)
@@ -260,7 +261,7 @@ int PixelSelector::makeMaps(
 	if(plot)
 	{
 		int w = wG[0];
-		int h = hG[0];
+		int h = hG[0] * HEIGHT_FACTOR;
 
 
 		MinimalImageB3 img(w,h);
@@ -306,7 +307,7 @@ Eigen::Vector3i PixelSelector::select(const FrameHessian* const fh,
 	int w = wG[0];
 	int w1 = wG[1];
 	int w2 = wG[2];
-	int h = hG[0];
+	int h = hG[0] * HEIGHT_FACTOR;
 
 
 	const Vec2f directions[16] = {
