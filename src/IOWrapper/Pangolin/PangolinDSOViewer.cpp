@@ -201,9 +201,6 @@ void PangolinDSOViewer::run()
 		videoImgChanged=kfImgChanged=resImgChanged=false;
 		openImagesMutex.unlock();
 
-
-
-
 		// update fps counters
 		{
 			openImagesMutex.lock();
@@ -526,7 +523,6 @@ bool PangolinDSOViewer::needPushDepthImage()
 }
 void PangolinDSOViewer::pushDepthImage(MinimalImageB3* image)
 {
-
     if(!setting_render_displayDepth) return;
     if(disableAllDisplay) return;
 

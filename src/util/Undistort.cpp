@@ -900,6 +900,9 @@ void Undistort::readFromFile(const char* configFileName, int nPars, std::string 
         K(1,2) = outputCalibration[3] * h - 0.5;
 	}
 
+    std::cout << "width: " << w << "\t\t" << "height: " << h << std::endl;
+    std::cout << "Normal camera matrix:\n" << K << std::endl;
+
 	if(benchmarkSetting_fxfyfac != 0)
 	{
 		K(0,0) = fmax(benchmarkSetting_fxfyfac, (float)K(0,0));
