@@ -11,14 +11,12 @@ Get some datasets from [https://vision.in.tum.de/mono-dataset](https://vision.in
 
 ### 2. Installation
 
-	git clone https://github.com/JakobEngel/dso.git
-
 #### 2.1 Required Dependencies
 
 ##### suitesparse and eigen3 (required).
 Required. Install with
 
-		sudo apt-get install libsuitesparse-dev libeigen3-dev libboost-all-dev
+		sudo apt-get install libsuitesparse-dev libeigen3-dev libboost-dev
 
 
 
@@ -53,7 +51,7 @@ You can compile without this, however then you can only read images directly (i.
 to unzip the dataset image archives before loading them).
 
 	sudo apt-get install zlib1g-dev
-	cd dso/thirdparty
+	cd thirdparty
 	tar -zxvf libzip-1.1.1.tar.gz
 	cd libzip-1.1.1/
 	./configure
@@ -63,7 +61,7 @@ to unzip the dataset image archives before loading them).
 
 #### 2.3 Build
 
-		cd dso
+		cd dso_beta
 		mkdir build
 		cd build
 		cmake ..

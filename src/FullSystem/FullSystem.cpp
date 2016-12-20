@@ -420,7 +420,7 @@ Vec4 FullSystem::trackNewCoarse(FrameHessian* fh)
 
 	if(!haveOneGood)
 	{
-        printf("BIG ERROR! tracking failed entirely. Take predictred pose and hope we may somehow recover.\n");
+		printf("BIG ERROR! tracking failed entirely. Take predictred pose and hope we may somehow recover.");
 		flowVecs = Vec3(0,0,0);
 		aff_g2l = aff_last_2_l;
 		lastF_2_fh = lastF_2_fh_tries[0];
@@ -801,8 +801,6 @@ void FullSystem::flagPointsForRemoval()
 
 void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 {
-
-    if(isLost) return;
 	boost::unique_lock<boost::mutex> lock(trackMutex);
 
 
@@ -860,11 +858,7 @@ void FullSystem::addActiveFrame( ImageAndExposure* image, int id )
 
 		Vec4 tres = trackNewCoarse(fh);
 		if(!std::isfinite((double)tres[0]) || !std::isfinite((double)tres[1]) || !std::isfinite((double)tres[2]) || !std::isfinite((double)tres[3]))
-        {
-            printf("Initial Tracking failed: LOST!\n");
 			isLost=true;
-            return;
-        }
 
 		bool needToMakeKF = false;
 		if(setting_keyframesPerSecond > 0)
@@ -1102,7 +1096,6 @@ void FullSystem::makeKeyFrame( FrameHessian* fh)
 
 
 
-
 	// =========================== Figure Out if INITIALIZATION FAILED =========================
 	if(allKeyFramesHistory.size() <= 4)
 	{
@@ -1125,7 +1118,6 @@ void FullSystem::makeKeyFrame( FrameHessian* fh)
 
 
 
-    if(isLost) return;
 
 
 
